@@ -12,7 +12,7 @@ env = gym.make("CarRacing-v0")
 #print(env.action_space) returns expected 
 conf_file = "example_config_file"
 MAX_GENERATIONS  = 10
-NUM_WORKERS = 3 # Parallelise evaluations
+NUM_WORKERS = 16 # Parallelise evaluations
 
 # Sets config to the one in the config file, rest to defaults
 config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -30,7 +30,9 @@ def preprocess(input):
 
 def eval_network(net, input):
     input = preprocess(input)
+    assert (input.shape == (2304,)) # Debugger for ensuring net receives appropiate input postpreprocess
     result = net.activate(input)
+    assert (len(result) == 3) # Debugger for ensuring output are 3 actions (continuous, as env.action_space is Box 3)
     return result
 
 def eval_single_genome(genome, genome_config):

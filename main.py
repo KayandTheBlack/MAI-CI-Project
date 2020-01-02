@@ -6,18 +6,24 @@ from neat.parallel import ParallelEvaluator
 
 from functools import partial
 from skimage.measure import block_reduce
-
+from gym import wrappers
 
 env = gym.make("CarRacing-v0")
+aigym_path='./videos'
+env = wrappers.Monitor(env, aigym_path)#, video_callable=False ,force=True)
 #print(env.action_space) returns expected 
 conf_file = "example_config_file"
 MAX_GENERATIONS  = 10
-NUM_WORKERS = 16 # Parallelise evaluations
+NUM_WORKERS = 16# Parallelise evaluations
 
 # Sets config to the one in the config file, rest to defaults
 config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
              neat.DefaultSpeciesSet, neat.DefaultStagnation,
              conf_file)
+
+from pyvirtualdisplay import Display
+display = Display(visible=0)#, size=(1400, 900))
+display.start()
 
 def preprocess(input):
     # Performs mean pooling in kernels of 2x2x3, to reduce dimmensionality. Resulting shape then flattened and fed into net
@@ -44,7 +50,8 @@ def eval_single_genome(genome, genome_config):
     action = eval_network(net, observation) # Obtain the next action
     done = False
     while not done:
-        env.render()
+        #env.render()
+        #env.render(mode='rgb_array') 
         observation, reward, done, _ = env.step(action) 
         # Perform action in current environ
         # Returns next observation, the current reward, whether we are done and some other info we discard.

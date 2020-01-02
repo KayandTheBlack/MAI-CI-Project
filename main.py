@@ -5,9 +5,11 @@ import numpy as np
 from neat.parallel import ParallelEvaluator
 
 from functools import partial
+from skimage.measure import block_reduce
 
 
 env = gym.make("CarRacing-v0")
+#print(env.action_space) returns expected 
 conf_file = "example_config_file"
 MAX_GENERATIONS  = 10
 NUM_WORKERS = 16 # Parallelise evaluations
@@ -17,21 +19,45 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
              neat.DefaultSpeciesSet, neat.DefaultStagnation,
              conf_file)
 
-def eval_single_genome(genome, genome_config)
+def preprocess(input):
+    # Performs mean pooling in kernels of 2x2x3, to reduce dimmensionality. Resulting shape then flattened and fed into net
+    # Note that the config file MUST have num_inputs = dim(flattened)
+    input = block_reduce(input, (2,2,3), np.mean)
+    input = input.flatten()
+    #print(input.shape)
+    return input
 
-def eval_many_genomes(genomes, neat_config):
+
+def eval_network(net, input):
+    input = preprocess(input)
+    result = net.activate(input)
+    return result
+
+def eval_single_genome(genome, genome_config):
+    # Creates new NN with the genome and the config
+    global env
+    net = neat.nn.FeedForwardNetwork.create(genome, genome_config)
+    total_reward = 0.0
+    observation = env.reset() # Start new game
+    action = eval_network(net, observation) # Obtain the next action
+    done = False
+    while not done:
+        observation, reward, done, _ = env.step(action) 
+        # Perform action in current environ
+        # Returns next observation, the current reward, whether we are done and some other info we discard.
+        total_reward += reward
+        action = eval_network(net, observation)
+    return total_reward
+
+def fitness(genomes, neat_config):
     parallel_evaluator = ParallelEvaluator(NUM_WORKERS, eval_function=eval_single_genome)
     parallel_evaluator.evaluate(genomes, neat_config)
-
-
 
 def run_neat(env, config):
     global MAX_GENERATIONS
     p = neat.Population(config)
-    p.add_reporter(neat.StdOutReporter(False)) # Write to terminal
+    #p.add_reporter(neat.StdOutReporter(False)) # Write to terminal
 
-    final_fitness = partial(eval_many_genomes, eval_single_genome)
-    # Merges the parallelised many genomes and the single_genome into one, as req. by run.
-    winner = p.run(, n=MAX_GENERATIONS)
+    winner = p.run(fitness, n=MAX_GENERATIONS)
 
 run_neat(env, config)

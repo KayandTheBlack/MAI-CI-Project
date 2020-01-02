@@ -59,7 +59,7 @@ def fitness(genomes, neat_config):
 def run_neat(env, config):
     global MAX_GENERATIONS
     p = neat.Population(config)
-    #p.add_reporter(neat.StdOutReporter(False)) # Write to terminal
+    p.add_reporter(neat.StdOutReporter(False)) # Write to terminal
 
     winner = p.run(fitness, n=MAX_GENERATIONS)
 

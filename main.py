@@ -12,7 +12,7 @@ env = gym.make("CarRacing-v0")
 #print(env.action_space) returns expected 
 conf_file = "example_config_file"
 MAX_GENERATIONS  = 10
-NUM_WORKERS = 16 # Parallelise evaluations
+NUM_WORKERS = 3 # Parallelise evaluations
 
 # Sets config to the one in the config file, rest to defaults
 config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -42,6 +42,7 @@ def eval_single_genome(genome, genome_config):
     action = eval_network(net, observation) # Obtain the next action
     done = False
     while not done:
+        env.render()
         observation, reward, done, _ = env.step(action) 
         # Perform action in current environ
         # Returns next observation, the current reward, whether we are done and some other info we discard.

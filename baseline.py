@@ -10,6 +10,7 @@ import numpy as np
 import gym
 
 from skimage.measure import block_reduce
+import matplotlib.pyplot as plt
 
 env = gym.make('CarRacing-v0')
 
@@ -17,6 +18,9 @@ def preprocess(frame):
     """
     This function receives a frame of the game and performs mean pooling in kernels od 2x2x3, to reduce dimensionality. Resulting 
     """
+    frame = frame[:83, :]
+    plt.imshow(frame)
+    plt.show()
     frame = block_reduce(frame, (2, 2, 3), np.mean)
     frame = frame.flatten()
 #     print(frame.shape)
@@ -25,7 +29,7 @@ def preprocess(frame):
 
 def eval_network(net, frame):
     frame = preprocess(frame)
-    assert (frame.shape == (2304,))
+    assert (frame.shape == (2016,))
     result = net.activate(frame)
     assert (len(result) == 3)
     return result

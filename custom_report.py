@@ -202,8 +202,9 @@ class StdOutReporter(BaseReporter):
     def dump(self, file_name):
         print('saving stats with name:' + file_name)
         with open(file_name, 'wb') as f:
-            pickle.dump(self, f)
+            pickle.dump(self.__dict__, f)
 
     def load(self, file_name):
         with open(file_name, 'rb') as f:
-            self = pickle.load(f)
+            tmp = pickle.load(f)
+            self.__dict__.update(tmp)

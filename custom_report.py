@@ -189,8 +189,8 @@ class StdOutReporter(BaseReporter):
             self.generation, best.size()))
 
     def species_stagnant(self, sid, species):
-        if self.show_species_detail:
-            print("\nSpecies {0} with {1} members is stagnated: removing it".format(sid, len(species.members)))
+#         if self.show_species_detail:
+        print("\nSpecies {0} with {1} members is stagnated: removing it".format(sid, len(species.members)))
 
     def info(self, msg):
         print(msg)

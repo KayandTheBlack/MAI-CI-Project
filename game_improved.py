@@ -13,7 +13,7 @@ import custom_report
 
 env = gym.make('CarRacing-v0')
 
-NUM_GENERATIONS = 1000
+NUM_GENERATIONS = 100
 PATIENCE = 0
 
 def map_image(pixel):
@@ -48,7 +48,7 @@ def eval_genome(genome, config):
     should return one float (that genome's fitness).
 
     """
-    net = neat.nn.FeedForwardNetwork.create(genome, config)
+    net = neat.nn.RecurrentNetwork.create(genome, config)
     total_reward = 6.0
     frame = env.reset()
     frame = preprocess(frame)

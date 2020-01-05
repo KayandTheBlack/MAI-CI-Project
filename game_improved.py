@@ -66,13 +66,11 @@ def eval_genome(genome, config):
         if not frame.any():
             done = True
             total_reward -= 80
-            print('finished with total reward of:', total_reward)
         # If the car stops exit the game with the reward that we would have if we have wait to the end.
         if np.array_equal(last_frame, frame):
             if patience_count == PATIENCE:
                 done = True
                 total_reward += -0.1 * (1000 - steps)
-                print('finished with total reward of:', total_reward)
             else:
                 patience_count += 1
         else:

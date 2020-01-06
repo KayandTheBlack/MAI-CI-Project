@@ -123,8 +123,7 @@ class StdOutReporter(BaseReporter):
     def end_generation(self, config, population, species_set):
         ng = len(population)
         ns = len(species_set.species)
-        self.dict['Population_size'].append(ng)
-        self.dict['Num_species'].append(ns)
+        self.dict['Num_species'][-1] = ns
 #         if self.show_species_detail:
         print('Population of {0:d} members in {1:d} species:'.format(ng, ns))
         sids = list(iterkeys(species_set.species))
@@ -142,7 +141,7 @@ class StdOutReporter(BaseReporter):
             print(
                 "  {: >4}  {: >3}  {: >4}  {: >7}  {: >7}  {: >4}".format(sid, a, n, f, af, st))
             list_of_id_age_size_fitness_adjfit_stag.append([sid, a, n, f, af, st])
-        self.dict['list_of_[ID,age,size,fitness,adj_fit,stag]'].append(list_of_id_age_size_fitness_adjfit_stag)
+        self.dict['list_of_[ID,age,size,fitness,adj_fit,stag]'][-1] = list_of_id_age_size_fitness_adjfit_stag
 #         else:
 #             print('Population of {0:d} members in {1:d} species'.format(ng, ns))
 
@@ -151,9 +150,9 @@ class StdOutReporter(BaseReporter):
         self.generation_times = self.generation_times[-10:]
         average = sum(self.generation_times) / len(self.generation_times)
         print('Total extinctions: {0:d}'.format(self.num_extinctions))
-        self.dict['Total_extinctions'].append(self.num_extinctions)
-        self.dict['Generation_time'].append(elapsed)
-        self.dict['Average_time'].append(average)
+        self.dict['Total_extinctions'][-1] = self.num_extinctions
+        self.dict['Generation_time'][-1] = elapsed
+        self.dict['Average_time'][-1] = average
         if len(self.generation_times) > 1:
             print("Generation time: {0:.3f} sec ({1:.3f} average)".format(elapsed, average))
         else:
@@ -165,6 +164,12 @@ class StdOutReporter(BaseReporter):
 
     def post_evaluate(self, config, population, species, best_genome):
         # pylint: disable=no-self-use
+        self.dict['Population_size'].append(len(population))
+        self.dict['Num_species'].append('--')
+        self.dict['list_of_[ID,age,size,fitness,adj_fit,stag]'].append([])
+        self.dict['Total_extinctions'].append('--')
+        self.dict['Generation_time'].append('--')
+        self.dict['Average_time'].append('--')
         fitnesses = [c.fitness for c in itervalues(population)]
         fit_mean = mean(fitnesses)
         fit_std = stdev(fitnesses)
@@ -196,6 +201,8 @@ class StdOutReporter(BaseReporter):
         print(msg)
 
     def save_table(self, file_name):
+        ngen = self.dict['Generation'][-1]
+        self.dump(self.file_name + str(ngen))
         df = pd.DataFrame(self.dict)
         df.to_csv(file_name + '.csv', header=True)
 
@@ -204,7 +211,22 @@ class StdOutReporter(BaseReporter):
         with open(file_name, 'wb') as f:
             pickle.dump(self.__dict__, f)
 
+    def load_outside(self, file_name):
+        with open(file_name, 'rb') as f:
+            tmp = pickle.load(f)
+            self.__dict__.update(tmp)
+
     def load(self, file_name):
         with open(file_name, 'rb') as f:
             tmp = pickle.load(f)
             self.__dict__.update(tmp)
+            self.dict['Generation'] = self.dict['Generation'][:-1]
+            self.dict['Population_size'] = self.dict['Population_size'][:-1]
+            self.dict['Num_species'] = self.dict['Num_species'][:-1]
+            self.dict['list_of_[ID,age,size,fitness,adj_fit,stag]'] = self.dict['list_of_[ID,age,size,fitness,adj_fit,stag]'][:-1]
+            self.dict['Total_extinctions'] = self.dict['Total_extinctions'][:-1]
+            self.dict['Generation_time'] = self.dict['Generation_time'][:-1]
+            self.dict['Average_time'] = self.dict['Average_time'][:-1]
+            self.dict['Average_fitness'] = self.dict['Average_fitness'][:-1]
+            self.dict['Stdev_fitness'] = self.dict['Stdev_fitness'][:-1]
+            self.dict['Best_genome_fitness'] = self.dict['Best_genome_fitness'][:-1]

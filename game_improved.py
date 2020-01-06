@@ -10,14 +10,15 @@ import gym
 from skimage.measure import block_reduce
 import matplotlib.pyplot as plt
 import custom_report
+import custom_checkpoint
 
 env = gym.make('CarRacing-v0')
 
 NUM_GENERATIONS = 1000
 PATIENCE = 0
 
-def map_image(pixel):
-    if pixel[1] < 120:
+def map_image(p):
+    if p[1] <= 107:
         return 1
     return 0
 
@@ -88,14 +89,14 @@ def run(config_file):
                          config_file)
     
     # Create the population, which is the top-level object for a NEAT run.
-    p = neat.Population(config)
+    # p = neat.Population(config)
     # Or load one from a checkpointer
-#     p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-0')
+    p = custom_checkpoint.Checkpointer.restore_checkpoint('neat-checkpoint-104', config)
 
     # Add a stdout reporter to show progress in the terminal.
     custom_stats = custom_report.StdOutReporter()
     # In case you want to load it from a checkpointer add:
-#     custom_stats.load('neat-stats-0')
+    custom_stats.load('neat-stats-104')
 
     p.add_reporter(custom_stats)
 #     stats = neat.StatisticsReporter()

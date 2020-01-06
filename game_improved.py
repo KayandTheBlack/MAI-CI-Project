@@ -88,14 +88,14 @@ def run(config_file):
                          config_file)
     
     # Create the population, which is the top-level object for a NEAT run.
-#     p = neat.Population(config)
+    p = neat.Population(config)
     # Or load one from a checkpointer
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-0')
+#     p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-0')
 
     # Add a stdout reporter to show progress in the terminal.
     custom_stats = custom_report.StdOutReporter()
     # In case you want to load it from a checkpointer add:
-    custom_stats.load('neat-stats-0')
+#     custom_stats.load('neat-stats-0')
 
     p.add_reporter(custom_stats)
 #     stats = neat.StatisticsReporter()

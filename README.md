@@ -1,5 +1,5 @@
 # MAI-CI-Project
-A Reinforcemenet learning based NEAT approach on OpenAI Gym's Car Racing game
+A Reinforcement learning based NEAT approach on OpenAI Gym's Car Racing game
 
 Each folder contains one experiment: 
   - baseline considers a population of 32 individuals, FeedForward NN, speciation threshold of 3.0, elitism of 2, and 0 units in the initial hidden layer

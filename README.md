@@ -12,7 +12,7 @@ Each folder contains one experiment:
   - Population 100 Speciation: Population 100 with speciation threshold set to 1.0
   - Population 100 RNN Speciation: Population 100 with speciation threshold set to 1.0 and allowing recurrent neural networks.
 
-A Reuirements file is placed inside each folder
+A requirements file is placed inside each folder
 
 To execute eny experiment, install the requirements with
 pip install -r requirements.txt

@@ -10,12 +10,13 @@ import gym
 from skimage.measure import block_reduce
 import matplotlib.pyplot as plt
 import custom_report
-import custom_checkpoint
+# import custom_checkpoint
 
 env = gym.make('CarRacing-v0')
 
-NUM_GENERATIONS = 1000
+NUM_GENERATIONS = 101
 PATIENCE = 0
+
 
 def map_image(p):
     if p[1] <= 107:
@@ -25,7 +26,10 @@ def map_image(p):
 
 def preprocess(frame):
     """
-    This function receives a frame of the game and performs mean pooling in kernels od 2x2x3, to reduce dimensionality. Resulting 
+    This function receives a frame of the game and
+        - converts all pixes to {0, 1} according to whther they are rouad or not.
+        - performs mean pooling in kernels of 10x10, to reduce dimensionality.
+        - flattens the result into an array 1D of size 90
     """
     # Simplify the map by setting the road to 1 and everything else to 0
     frame = np.array([[map_image(pixel) for pixel in row] for row in frame])
@@ -36,18 +40,20 @@ def preprocess(frame):
 
 
 def eval_network(net, frame):
-#     print(frame.shape)
+    """ This function feeds the net with an already preprocessed frame """
+    # checks if the frame has been already preprocessed
     assert (frame.shape == (90,))
     result = net.activate(frame)
+    # checks that the output consists of three numbers
     assert (len(result) == 3)
     return result
+
 
 def eval_genome(genome, config):
     """
     This function will be run in parallel by ParallelEvaluator.  It takes two
     arguments (a single genome and the genome class configuration data) and
-    should return one float (that genome's fitness).
-
+    returns one float: the genome's fitness.
     """
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     total_reward = 6.0
@@ -67,7 +73,8 @@ def eval_genome(genome, config):
         if not frame.any():
             done = True
             total_reward -= 80
-        # If the car stops exit the game with the reward that we would have if we have wait to the end.
+        # If the car stops exit the game with the reward that we would have if
+        # we have wait to the end.
         if np.array_equal(last_frame, frame):
             if patience_count == PATIENCE:
                 done = True
@@ -82,44 +89,39 @@ def eval_genome(genome, config):
 
     return total_reward
 
+
 def run(config_file):
+    """ Main function that runs the neat platform
+        - Loads the config file
+        - Initializes the population according to the parameters of the config file
+        - Add a Reporter to collect statistics of the runs
+        - Add a Checkpointer to save (using picke):
+            generation, config, population, species_set, rndstate
+    """
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
-    
+
     # Create the population, which is the top-level object for a NEAT run.
-    # p = neat.Population(config)
-    # Or load one from a checkpointer
-    p = custom_checkpoint.Checkpointer.restore_checkpoint('neat-checkpoint-104', config)
+    p = neat.Population(config)
 
     # Add a stdout reporter to show progress in the terminal.
     custom_stats = custom_report.StdOutReporter()
-    # In case you want to load it from a checkpointer add:
-    custom_stats.load('neat-stats-104')
-
     p.add_reporter(custom_stats)
-#     stats = neat.StatisticsReporter()
-#     p.add_reporter(stats)
+
+    # save a checkpointer each generation
     p.add_reporter(neat.Checkpointer(1))
 
-
-
-    # Run for up to 300 generations.
+    # Run using parallelizing with thenumber of processors for NUM_GENERATIONS
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
     winner = p.run(pe.evaluate, NUM_GENERATIONS)
-
+    # save the results of the Statistics collected by the Reporter into a csv
     custom_stats.save_table('stats_table')
-
-#     visualize.draw_net(config, winner, True)
-#     visualize.plot_stats(stats, ylog=False, view=True)
-#     visualize.plot_species(stats, view=True)
 
 
 if __name__ == '__main__':
-    # Determine path to configuration file. This path manipulation is
-    # here so that the script will run successfully regardless of the
-    # current working directory.
+    """Determine the path to the configuration file """
     local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, 'example_config_file')
+    config_path = os.path.join(local_dir, 'baseline_config_file')
     run(config_path)

@@ -14,7 +14,7 @@ Each folder contains one experiment:
 
 A requirements file is placed inside each folder
 
-To execute eny experiment, install the requirements with
+To execute any experiment, install the requirements with
 pip install -r requirements.txt
 and run the code with:
 python name_of_file.py
